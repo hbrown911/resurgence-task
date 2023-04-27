@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <meta charset="utf-8">
+        <style>
+            html,body{
+                margin : 0px auto;
+                width: 100%;
+                height: 100%;
+            }
+        
+            .responsePanel {
+                margin : 0px auto;
+                position: absolute;
+            }
+            
+            .workplace {
+                margin : 0px auto;
+                width: 350px;
+                height: 350px;
+                border-radius: 5px;
+                border: solid 3px #800000;
+                background-color: #fea636;
+                opacity: 0.2;
+                position: absolute;
+                user-select: none; 
+                -ms-user-select: none;
+                -moz-user-select: none;
+                -webkit-user-select: none;
+            }
+            
+            .respButton {
+                margin : 0px auto;
+                width: 100px;
+                height: 100px;
+                padding: 3px;
+                border-radius: 5px;
+                border: solid 1px #000000;
+    	        text-align: center;
+                color: white;
+    	        font-weight: bold;
+                position: absolute;
+                user-select: none; 
+                -ms-user-select: none;
+                -moz-user-select: none;
+                -webkit-user-select: none;
+            }
+            
+            .respButton:hover {
+                opacity: 0.8;
+            }
+            
+            .scoreContainer {
+                position: absolute;
+            }
+            
+            #barPoint {
+                margin : 0px auto;
+                width: 50px;
+                border: solid 1px #000000;
+                position: absolute;
+                user-select: none; 
+                -ms-user-select: none;
+                -moz-user-select: none;
+                -webkit-user-select: none;
+            }
+            
+            #barPoint.normal {
+                background: #d3d3d3;
+            }
+            
+            #barPoint.flashGreen {
+                background: #00ff00;
+            }
+            
+            #lblBarPoint {
+                margin : 0px auto;
+                font-size: 12pt;
+                font-weight: bold;
+                width: 50px;
+                position: absolute;
+                user-select: none; 
+                -ms-user-select: none;
+                -moz-user-select: none;
+                -webkit-user-select: none;
+            }
+            
+            #imgBeach {
+                margin : 0px auto;
+                width: 100%;
+                height: 100%;
+                /* ***** Assumes that you uploaded "beach.jpg" to the "images" directory under the directory for the Luxech theme*/
+                background: url(/wp-content/themes/luxech/images/beach.jpg); 
+                background-size: cover;
+                background-repeat: no-repeat;
+                display: none;
+            }
+            
+            #imgBeach.appear {
+                display: block;
+            }
+            
+            .Triangle {
+                margin : 0px auto;
+                font-size: 18pt;
+                width: 200px;
+                height: 200px;
+                position: absolute;
+                user-select: none; 
+                -ms-user-select: none;
+                -moz-user-select: none;
+                -webkit-user-select: none;
+            }
+            
+            .Diamond {
+                margin : 0px auto;
+                font-size: 18pt;
+                width: 200px;
+                height: 200px;
+                position: absolute;
+                user-select: none; 
+                -ms-user-select: none;
+                -moz-user-select: none;
+                -webkit-user-select: none;
+            }
+
+            .Gain {
+                margin : 0px auto;
+                font-size: 18pt;
+                width: 50px;
+                text-align: center;
+                position: absolute;
+                user-select: none; 
+                -ms-user-select: none;
+                -moz-user-select: none;
+                -webkit-user-select: none;
+            }
+            
+            .saveContainer {
+                margin : 0px auto;
+                width: 60%;
+                position: relative;
+                -ms-user-select: none;
+                user-select: none;
+                -moz-user-select: none;
+                -webkit-user-select: none;
+            }
+
+            #timer-container {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: #000;
+                padding: 20px;
+                border-radius: 10px;
+                display: none;
+            }
+
+            #countdown-timer {
+                font-size: 72px;
+                color: #ffffff;
+                text-align: center;
+            }
+
+        </style>
+    </head>
+    <body>
+        
+        <div class='responsePanel' id='leftPanel'>
+            <div class='workplace' id='leftWorkplace'></div>
+            <div class='respButton' id='btnLeft' onmousedown='return false'></div>
+            <p><br></p>
+        </div>
+        
+        <div class='responsePanel' id='rightPanel'>
+            <div class='workplace' id='rightWorkplace'></div>
+            <div class='respButton' id='btnRight' onmousedown='return false'></div>
+        </div>
+        
+        <div class='scoreContainer' id ='scoreBoard'>
+            <div class='normal' id='barPoint'></div>
+            <div id='lblBarPoint'></div>
+        </div>
+        
+        <div id='imgBeach'></div>
+        <div class='Triangle' id='imgTriangleLeft'></div>
+        <div class='Triangle' id='imgTriangleRight'></div>
+        <div class='Diamond' id='imgDiamondLeft'></div>
+        <div class='Diamond' id='imgDiamondRight'></div>
+        <div class='Gain' id='lblGainLeft'></div>
+        <div class='Gain' id='lblGainRight'></div>
+        
+        <div class='saveContainer' id ='saveData'>
+            <p><br></p>
+            <p><br></p>
+            <p><br></p>
+            <p><span id='lblMessage' style='font-size:16px;margin-left:15%;margin-right:10%;'></span></p>
+            <div><input id='btnSaveData' type='button' style='width:180px;background-color:yellow;padding:10px;font-size:24px;margin-left:35%;margin-right:10%;' value='Proceed'></div>
+            <p><br></p>
+        </div>
+
+        <div id="timer-container">
+            <div id="countdown-timer"></div>
+        </div>
+        
+        <script>
+            "use strict";
+             
+            // URLs (***** Change the following URLs to match your domain name. Also change the URLs in the CSS codes above if any)
+            const URL_webpage_endofsession = 'https://resurgence-task.com/endofsession/'; // Page immediately after session
+            const URL_webpage_terminated = 'https://resurgence-task.com/terminated/'; // Page when no response occurs in the first X sec
+            const URL_webpage_backpage = 'https://resurgence-task.com/backpage/'; // Page when trying to re-enter the session page
+            
+            // The following URL assumes that you uploaded relevant files to the "images" directory under the directory for the Luxech theme
+            const URL_image_circle = '<img src ="/wp-content/themes/luxech/images/circle.PNG">'; 
+            const URL_image_square = '<img src ="/wp-content/themes/luxech/images/square.PNG">'; 
+            const URL_image_triangle = '<img src ="/wp-content/themes/luxech/images/triangle.PNG">';
+            const URL_image_diamond = '<img src ="/wp-content/themes/luxech/images/diamond.PNG">';
+            
+            // The following URL assumes that you uploaded relevant files to the directory for the Luxech theme
+            const URL_php_savedatafile = '/wp-content/themes/luxech/SaveDataFile.php';
+            
+            // Objects
+            const leftPanel = document.getElementById('leftPanel');
+            const leftWorkplace = document.getElementById('leftWorkplace');
+            const btnLeft = document.getElementById('btnLeft');
+            const rightPanel = document.getElementById('rightPanel');
+            const rightWorkplace = document.getElementById('rightWorkplace');
+            const btnRight = document.getElementById('btnRight');
+            const scoreBoard = document.getElementById('scoreBoard');
+            const barPoint = document.getElementById('barPoint');
+            const lblBarPoint = document.getElementById('lblBarPoint');
+            const imgBeach = document.getElementById('imgBeach');
+            const imgTriangleLeft = document.getElementById('imgTriangleLeft');
+            const imgTriangleRight = document.getElementById('imgTriangleRight');
+            const imgDiamondLeft = document.getElementById('imgDiamondLeft');
+            const imgDiamondRight = document.getElementById('imgDiamondRight');
+            const imgCircle = document.getElementById('imgCircle')
+            const imgSquare = document.getElementById('imgSquare')
+            const lblGainLeft = document.getElementById('lblGainLeft'); 
+            const lblGainRight = document.getElementById('lblGainRight'); 
+            const saveData = document.getElementById('saveData');
+            const lblMessage = document.getElementById('lblMessage');
+            const btnSaveData = document.getElementById('btnSaveData');
+            const timerContainer = document.getElementById('timer-container');
+            const countdownTimer = document.getElementById("countdown-timer");
+            
+            // Parameters
+            const basePay = 0.5; // Base payment
+            const VI_Target = 2; // VI value for target response
+            const VI_Alt = 2; // VI value for alternative response
+            const COR = 1; // Changeover ratio
+            const initPoint = 0; // Initial points
+            const terminatePhase1 = 30000; // in ms
+            const dollarPerPoint = 0.01; // $ per point
+            const intervalPeriodLength = 12000; // 12-s bins
+            const numIntervalsPhase1 = 5; // #bins in Phase 1 (should be 15, changed for testing)
+            var minIntervalsPhase2Session1 = 5; // #bins in Phase 2
+            var minIntervalsPhase2Session2 = 5;
+            var minIntervalsPhase2Session3 = 5;
+            var minIntervalsPhase2Session4 = 5;
+            const numIntervalsPhase3Session1 = 5;
+            const numIntervalsPhase3Session2 = 5;
+            const numIntervalsPhase3Session3 = 5;
+            const maxIntervalsPhase2 = 30;
+            const phase2DelayTime = 15; //15 seconds delay
+            var targetButton = 0; //0=left, 1=right
+            var alternativeButton = 1;
+            var targetCue = 0; //0=triangle, 1=diamond
+            var extinctionCue = 1;
+            var tExtFirst = true;
+            var countdownTime = 15; //seconds
+
+            // Dependent variables
+            var ID = 0;
+            var GROUP = 0;
+            var code = 0;
+            var dtStart = [];
+            var dtEnd = [];
+            var targetRespCount = 0;
+            var altRespCount = 0;
+            var totalGain = 0;
+            var totalSR = 0;
+            var srPhase1 = 0;
+            var srPhase2Session1 = 0;
+            var srPhase2Session2 = 0;
+            var srPhase2Session3 = 0;
+            var srPhase2Session4 = 0;        
+
+            // Array of responses per bin
+            var arrTargetRespCountPhase1 = [];
+            var arrTargetRespCountPhase2Session1 = [];
+            var arrTargetRespCountPhase2Session2 = [];
+            var arrTargetRespCountPhase2Session3 = [];
+            var arrTargetRespCountPhase2Session4 = [];
+            var arrTargetRespCountPhase3Session1 = [];
+            var arrTargetRespCountPhase3Session2 = [];
+            var arrTargetRespCountPhase3Session3 = [];
+            var arrAltRespCountPhase1 = [];
+            var arrAltRespCountPhase2Session1 = [];
+            var arrAltRespCountPhase2Session2 = [];
+            var arrAltRespCountPhase2Session3 = [];
+            var arrAltRespCountPhase2Session4 = [];
+            var arrAltRespCountPhase3Session1 = [];
+            var arrAltRespCountPhase3Session2 = [];
+            var arrAltRespCountPhase3Session3 = [];
+            
+            // For real-time data with event markers (01-99)
+            var numOfEvents = 0;
+            var arrEvents = [];
+            
+            // 01: Target response
+            // 02: Alternative response
+            // 03: Response on Left workplace
+            // 04: Response on Right workplace
+            // 05: Response on earnings bar
+            // 06: Response on earnings label
+            // 07: Response on backgraound image
+            // 08: Response on Left triangle
+            // 09: Response on Right triangle
+            // 10: Response on left diamond
+            // 11: Response on right diamond
+            // 12: Response on point-gain label on Left triangle
+            // 13: Response on point-gain label on Right triangle
+            // 14: Reinforcement on the left side phase 1
+            // 15: Reinforcement on the right side phase 1
+            // 16: Reinforcement right triangle phase 2 extintion
+            // 17: Reinforcement right diamond phase 2 extinction
+            // 18: Reinforcement left triangle phase 2 extinction
+            // 19: Reinforcement left diamond phase 2 extinction
+            // 20: Reinforcement right diamond phase 2 no ext
+            // 21: Reinforcement right triangle phase 2 no ext
+            // 22: Reinforcement left diamond phase 2 no ext
+            // 23: Reinforcement left triangle phase 2 no ext
+            // 30: End of Phase 1
+            // 31: End of Phase 2 session 1
+            // 32: End of Phase 2 session 2
+            // 33: End of Phase 2 session 3
+            // 34: End of Phase 2 session 4
+            // 35: End of Phase 3 session 1
+            // 36: End of Phase 3 session 1
+            // 37: End of Phase 3 session 2
+            // 99: End of session
+
+            // Thread
+            const thread = `
+                onmessage = function timer() {
+                    postMessage("e"); 
+                    setTimeout(timer, 10); }
+            `;
+            const blob = new Blob([thread]);
+            const blobURL = URL.createObjectURL(blob);
+            const tickTock = new Worker(blobURL); 
+
+            // Flags
+            var flagInitPhase1 = 1;
+            var flagInitPhase2Session1 = 0;
+            var flagInitPhase2Session2 = 0;
+            var flagInitPhase2Session3 = 0;
+            var flagInitPhase2Session4 = 0;
+            var flagInitPhase3Session1 = 0;
+            var flagInitPhase3Session2 = 0;
+            var flagInitPhase3Session3 = 0; 
+            var flagEndPhase1 = 0;
+            var flagEndPhase2 = 0;
+            var flagEndPhase2Session1 = 0;
+            var flagEndPhase2Session2 = 0;
+            var flagEndPhase2Session3 = 0;
+            var flagEndPhase2Session4 = 0;
+            var flagEndPhase3Session1 = 0;
+            var flagEndPhase3Session2 = 0;
+            var flagInitSRPhase2Session1 = 1;
+            var flagInitSRPhase2Session2 = 0;
+            var flagInitSRPhase2Session3 = 0;
+            var flagInitSRPhase2Session4 = 0;
+            var flagInitSRPhase3Session1 = 0;
+            var flagEndSession = 0;
+            var flagSaveButtonClick = 0;
+            var flagDuringSave = 0;
+            var flagTerminate = 0;
+            var flagCOR_Target = 0;
+            var flagCOR_Alt = 0;  
+
+            // Session-related variables
+            var dtSt = 0;
+            var dtE = 0;
+            var startTime = 0;
+            var intervalOnsetMotion = 0;
+            var intervalOnsetPeriod = 0;
+            var onsetVI = 0;
+            var onsetVI_Alt = 0;
+            var tmpTargetRespCount = 0;
+            var tmpAltRespCount = 0;
+            var tmpCOR_Target = 0;
+            var tmpCOR_Alt = 0;
+            var intervalCountPhase1 = 0;
+            var intervalCountPhase2Session1 = 0;
+            var intervalCountPhase2Session2 = 0;
+            var intervalCountPhase2Session3 = 0;
+            var intervalCountPhase2Session4 = 0;
+            var intervalCountPhase3Session1 = 0;
+            var intervalCountPhase3Session2 = 0;
+            var intervalCountPhase3Session3 = 0;
+            var currentSessionNumber = 1;
+
+            // Screen size
+            const Width = window.parent.screen.width;
+            const Height = window.parent.screen.height - 200;
+            const offsetMidline = 300;
+
+            // Button-related variables
+            const buttonSize = btnLeft.clientWidth; 
+            const motionInterval = 200; // in ms
+            const motionRange = 1.2;
+            const buttonMotionStep = buttonSize / 5;
+            const adj = buttonSize * motionRange;
+            var btnLeftMinX = 0;
+            var btnLeftMaxX = 0;
+            var btnLeftMinY = 0;
+            var btnLeftMaxY = 0;
+            var btnRightMinX = 0;
+            var btnRightMaxX = 0;
+            var btnRightMinY = 0;
+            var btnRightMaxY = 0;
+            
+            // Other objects-related variables
+            const triangleOffsetX = -50;
+            const triangleOffsetY = 200;
+            const diamondOffsetX = -50;
+            const diamondOffsetY = 200;
+            const gainOffsetX = 15;
+            const gainOffsetY = 120;
+            const lblOffset = 30;
+            const pixelRatio = 50;
+            const lblBarPointOffset = 10;
+            var bottomPanel = 0;
+            
+            // Default seeds for xorshift random number generator (Marsaglia, 2003) -- Actually never used
+            var seed = [123456789, 362436069, 521288629, 88675123];
+            
+            // Variables for generating Fleshler & Hoffman (1962) distribution (see also Escobar & Pérez-Herrera, 2015)
+            var Value_Variable = 0;
+            var v = 0;
+            var n = 0;
+            var order = 0;
+            var Iteration_Variable = 0;
+            var Iterations = 10;
+            var rd = Array(Iterations + 1);
+            var vi= Array(Iterations + 1);
+            var Sumxser = 0;
+
+            // Call a PHP program
+            function SaveData() {
+                lblMessage.innerHTML = "Please wait...";
+                btnSaveData.style.display = "none";
+                flagDuringSave = 1;
+                flagSaveButtonClick = 1;
+                
+                $.ajax({
+                    type: "POST",
+                    url: URL_php_savedatafile,
+                    data:  JSON.stringify({
+                        "ID": ID,
+                        "GROUP": GROUP,
+                        "code": code,
+                        "basePay": basePay,
+                        "dtStart": dtStart,
+                        "dtEnd": dtEnd,
+                        "targetRespCount": targetRespCount,
+                        "altRespCount": altRespCount,
+                        "totalGain": totalGain,
+                        "totalSR": totalSR,
+                        "srPhase1": srPhase1,
+                        "srPhase2Session1": srPhase2Session1,
+                        "srPhase2Session2": srPhase2Session2,
+                        "srPhase2Session3": srPhase2Session3,
+                        "srPhase2Session4": srPhase2Session4,
+                        "arrTargetRespCountPhase1": arrTargetRespCountPhase1,
+                        "arrTargetRespCountPhase2Session1": arrTargetRespCountPhase2Session1,
+                        "arrTargetRespCountPhase2Session2": arrTargetRespCountPhase2Session2,
+                        "arrTargetRespCountPhase2Session3": arrTargetRespCountPhase2Session3,
+                        "arrTargetRespCountPhase2Session4": arrTargetRespCountPhase2Session4,
+                        "arrTargetRespCountPhase3Session1": arrTargetRespCountPhase3Session1,
+                        "arrTargetRespCountPhase3Session2": arrTargetRespCountPhase3Session2,
+                        "arrTargetRespCountPhase3Session3": arrTargetRespCountPhase3Session3,
+                        "arrAltRespCountPhase1": arrAltRespCountPhase1,
+                        "arrAltRespCountPhase2Session1": arrAltRespCountPhase2Session1,
+                        "arrAltRespCountPhase2Session2": arrAltRespCountPhase2Session2,
+                        "arrAltRespCountPhase2Session3": arrAltRespCountPhase2Session3,
+                        "arrAltRespCountPhase2Session4": arrAltRespCountPhase2Session4,
+                        "arrAltRespCountPhase3Session1": arrAltRespCountPhase3Session1,
+                        "arrAltRespCountPhase3Session2": arrAltRespCountPhase3Session2,
+                        "arrAltRespCountPhase3Session3": arrAltRespCountPhase3Session3,
+                        "arrEvents": arrEvents,
+     
+                        "VI_Target": VI_Target,
+                        "VI_Alt": VI_Alt,
+                        "COR": COR,
+                        "initPoint": initPoint,
+                        "terminatePhase1": terminatePhase1,
+                        "dollarPerPoint": dollarPerPoint,
+                        "intervalPeriodLength": intervalPeriodLength,
+                        "numIntervalsPhase1": numIntervalsPhase1,
+                        "minIntervalsPhase2Session1": minIntervalsPhase2Session1,
+                        "minIntervalsPhase2Session2": minIntervalsPhase2Session2,
+                        "minIntervalsPhase2Session3": minIntervalsPhase2Session3,
+                        "minIntervalsPhase2Session4": minIntervalsPhase2Session4,
+                        "numIntervalsPhase3Session1": numIntervalsPhase3Session1,
+                        "numIntervalsPhase3Session2": numIntervalsPhase3Session2,
+                        "numIntervalsPhase3Session3": numIntervalsPhase3Session3,
+                        "targetButton": targetButton,
+                        "alternativeButton": alternativeButton,
+                        "targetCue": targetCue,
+                        "extinctionCue": extinctionCue,
+                        "tExtFirst": tExtFirst,
+                    }),
+                    success: function(filecount) {
+                        tickTock.terminate();
+                        sessionStorage.setItem("filecount", filecount);
+                        sessionStorage.setItem("ID", ID);
+                        sessionStorage.setItem("GROUP", GROUP);
+                        sessionStorage.setItem("code", code); 
+                        sessionStorage.setItem("basePay", basePay);
+                        sessionStorage.setItem("totalGain", totalGain);
+
+                        var dollar = totalGain * dollarPerPoint + basePay;
+                        dollar = dollar.toFixed(2); // Decimal points of 2 (string)
+                        sessionStorage.setItem("dollar", dollar);
+                        
+                        function delay(msec){
+                            return new Promise(function(resolve){
+                                    setTimeout(resolve, msec);
+                                });
+                        }
+                        async function wait(msec){
+                            await delay(msec);
+                            window.location.replace(URL_webpage_endofsession);
+                        }
+                        wait(500); // 0.5-s delay for having enough time to store data with sessionStorage.setItem
+
+                    },
+                    error: function() {
+                        flagDuringSave = 0;
+                    }
+                })
+            }
+
+            // Record real time with event markers
+            function EventMarker(event) {
+                var str = event + ") " + Math.round(RealTime());
+                arrEvents.push(str);
+                numOfEvents++;
+            }
+
+            function startCountdown(sessionNumber) {
+                var otherElements = document.querySelectorAll("body > *:not(#timer-container)");
+                // hide other elements on the page
+                for (var i = 0; i < otherElements.length; i++) {
+                    otherElements[i].style.display = "none";
+                }
+                // start countdown
+                var countdownInterval = setInterval(function() {
+                    countdownTime--;
+                    countdownTimer.innerHTML = "Session " + sessionNumber + " begins in " + countdownTime + " seconds";
+                    if (countdownTime <= 0) {
+                        clearInterval(countdownInterval);
+                        timerContainer.style.display = "none";
+                        countdownTime = 15;
+
+                        // show other elements on the page again
+                        for (var i = 0; i < otherElements.length; i++) {
+                        otherElements[i].style.display = "";
+                        }
+                    }
+                }, 1000);
+                timerContainer.style.display = "flex";
+            }
+
+            // Calculate overall points
+            function calcPoint() {
+                barPoint.style.height = (totalGain * 10000/ pixelRatio) + "px";
+                barPoint.style.top = bottomPanel - (totalGain * 10000/ pixelRatio) + "px";
+                
+                lblBarPoint.innerHTML= "US$" + totalGain.toFixed(2);
+                lblBarPoint.style.top = bottomPanel + "px";
+            }
+
+            // Flash green on the point bar
+            function flashGreen() {
+                barPoint.classList.add('flashGreen');
+                setTimeout(function(){
+                    barPoint.classList.remove('flashGreen');
+                }, 400)
+            }
+
+            // ReinforcementPhase1
+            function SRPhase1(targetButton) {
+                totalSR++;
+                totalGain = totalGain + dollarPerPoint;
+                
+                if (targetButton == 0) { 
+                    EventMarker("14");
+                    $('#lblGainLeft').stop().show();
+                    lblGainLeft.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainLeft').fadeOut(400);
+
+                } else {
+                    EventMarker("15");
+                    $('#lblGainRight').stop().show();
+                    lblGainRight.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainRight').fadeOut(400);
+                }
+                flashGreen();
+            }
+
+            //Reinforcement Phase 2 Target Extinction
+            function SRPhase2targetExt(targetButton, extinctionCue) {
+                console.log("SRPhase2targetExt function called")
+                totalSR++;
+                totalGain = totalGain + dollarPerPoint;
+                
+                if (targetButton == 0 && extinctionCue == 0) { 
+                    console.log("Condition 1 target ext satisfied")
+                    EventMarker("16");
+                    $('#lblGainRight').stop().show();
+                    lblGainRight.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainRight').fadeOut(400);
+
+                    $('#imgTriangleRight').stop().show();
+                    imgTriangleRight.innerHTML = URL_image_triangle;
+                    $('#imgTriangleRight').fadeOut(400);
+
+                } else if (targetButton == 0 && extinctionCue == 1) {
+                    console.log("condition 2 target ext satisfied")
+                    EventMarker("17");
+                    $('#lblGainRight').stop().show();
+                    lblGainRight.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainRight').fadeOut(400);
+
+                    $('#imgDiamondRight').stop().show();
+                    imgDiamondRight.innerHTML = URL_image_diamond;
+                    $('#imgDiamondRight').fadeOut(400);
+
+                } else if (targetButton == 1 && extinctionCue == 0) {
+                    console.log("condition 3 target ext satisfied")
+                    EventMarker("18");
+                    $('#lblGainLeft').stop().show();
+                    lblGainLeft.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainLeft').fadeOut(400);
+
+                    $('#imgTriangleLeft').stop().show();
+                    imgTriangleLeft.innerHTML = URL_image_triangle;
+                    $('#imgTriangleLeft').fadeOut(400);
+
+                } else if (targetButton == 1 && extinctionCue == 1) {
+                    console.log("condition 4 target ext satisfied")
+                    EventMarker("19");
+                    $('#lblGainLeft').stop().show();
+                    lblGainLeft.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainLeft').fadeOut(400);
+
+                    $('#imgDiamondLeft').stop().show();
+                    imgDiamondLeft.innerHTML = URL_image_diamond;
+                    $('#imgDiamondLeft').fadeOut(400);
+                }
+                flashGreen();
+            }
+
+            //Reinforcement Phase 2 No Extinction
+            function SRPhase2noExt(targetButton, targetCue) {
+                console.log("SRPhase2noExt function called")
+                totalSR++;
+                totalGain = totalGain + dollarPerPoint;
+                
+                if (targetButton == 0 && targetCue == 1) {
+                    console.log("condition 1 no ext satisfied")  
+                    EventMarker("20");
+                    $('#lblGainRight').stop().show();
+                    lblGainRight.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainRight').fadeOut(400);
+
+                    $('#imgDiamondRight').stop().show();
+                    imgDiamondRight.innerHTML = URL_image_diamond;
+                    $('#imgDiamondRight').fadeOut(400);
+
+                } else if (targetButton == 0 && targetCue == 0) {
+                    console.log("condition 2 no ext satisfied")
+                    EventMarker("21");
+                    $('#lblGainRight').stop().show();
+                    lblGainRight.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainRight').fadeOut(400);
+
+                    $('#imgTriangleRight').stop().show();
+                    imgTriangleRight.innerHTML = URL_image_triangle;
+                    $('#imgTriangleRight').fadeOut(400);
+
+                } else if (targetButton == 1 && targetCue == 1) {
+                    console.log("condition 3 no ext satisfied")
+                    EventMarker("22");
+                    $('#lblGainLeft').stop().show();
+                    lblGainLeft.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainLeft').fadeOut(400);
+
+                    $('#imgDiamondLeft').stop().show();
+                    imgDiamondLeft.innerHTML = URL_image_diamond;
+                    $('#imgDiamondLeft').fadeOut(400);
+
+                } else if (targetButton == 1 && targetCue == 0) {
+                    console.log("condition 4 no ext satisfied")
+                    EventMarker("23");
+                    $('#lblGainLeft').stop().show();
+                    lblGainLeft.innerHTML = "+" + dollarPerPoint;
+                    $('#lblGainLeft').fadeOut(400);
+
+                    $('#imgTriangleLeft').stop().show();
+                    imgTriangleLeft.innerHTML = URL_image_triangle;
+                    $('#imgTriangleLeft').fadeOut(400);
+                }
+                flashGreen();
+            }
+
+            // Events caused by target response
+            function TargetResp(targetButton) {
+                console.log("targetresp function called")
+                targetRespCount++;
+                tmpTargetRespCount++;
+                EventMarker("01");
+                
+                tmpCOR_Target++;
+                flagCOR_Alt = 1;
+                tmpCOR_Alt = 0;
+                
+
+                if (flagInitPhase1) {
+                    // Phase 1 does not start until the first SR, after meeting COR
+                    if (tmpCOR_Target > COR) {
+                        flagCOR_Target = 0;
+                    }
+                    if (flagCOR_Target == 1) {
+                        calcPoint();
+                        return;
+                    }
+                    
+                    SRPhase1(targetButton);
+                    intervalOnsetPeriod = performance.now();
+                    
+                    onsetVI = performance.now();
+                    tmpTargetRespCount = 0;
+                    tmpAltRespCount = 0;
+                    flagInitPhase1 = 0;
+                    
+                } else {
+                    if (!flagEndPhase1) {
+                        // Phase 1
+                        if (performance.now() - onsetVI >= rd[Value_Variable]) {
+                            
+                            // COR
+                            if (tmpCOR_Target > COR) {
+                                flagCOR_Target = 0;
+                            } 
+                            if (flagCOR_Target == 1) {
+                                calcPoint();
+                                return;
+                            }
+                            
+                            SRPhase1(targetButton);
+                            srPhase1++;
+                            
+                            onsetVI = performance.now(); 
+                            Value_Variable++;
+                            FleshlerHoffman(VI_Target);
+                        } else {
+
+                        }
+                    } else {
+                        // Phases 2 and 3
+                        }
+                    }
+                    calcPoint();
+                }
+                
+            // Events caused by alternative response
+            function AltResp(alternativeButton) {
+                console.log("altresp function called")
+                altRespCount++;
+                tmpAltRespCount++;
+                EventMarker("02");
+
+                tmpCOR_Alt++;
+                flagCOR_Target = 1;
+                tmpCOR_Target = 0;
+                
+                if (!flagEndPhase1) {
+                    // Phase 1
+                } else if (flagEndPhase1) {
+                    // Phase 2
+                    if (tExtFirst == true) { 
+                        if (flagInitPhase2Session1) {
+                            if (performance.now() - onsetVI_Alt >= rd[Value_Variable]) {
+                            // Note Phase 2 automatically starts but VI schedule starts only after the first SR upon a single response, after meeting COR 
+                            // COR
+                                if (tmpCOR_Alt > COR) {
+                                    flagCOR_Alt = 0;
+                                }
+                                if (flagCOR_Alt == 1) {
+                                    calcPoint();
+                                    return;
+                                }
+                            
+                            SRPhase2targetExt(targetButton, extinctionCue);
+                            srPhase2Session1++;
+                            
+                            onsetVI_Alt = performance.now();
+                            Value_Variable++;
+                            FleshlerHoffman(VI_Alt);
+                            }  
+                        } else if (flagInitPhase2Session2) {
+                            if (performance.now() - onsetVI_Alt >= rd[Value_Variable]) {
+                    
+                                // COR
+                                if (tmpCOR_Alt > COR) {
+                                    flagCOR_Alt = 0;
+                                }
+                                if (flagCOR_Alt == 1) {
+                                    calcPoint();
+                                    return;
+                                }
+                                
+                                SRPhase2noExt(targetButton, extinctionCue);
+                                srPhase2Session2++;
+                                
+                                onsetVI_Alt = performance.now(); 
+                                Value_Variable++;
+                                FleshlerHoffman(VI_Alt);
+                            }
+                        } else if (flagInitPhase2Session3) {
+                            if (performance.now() - onsetVI_Alt >= rd[Value_Variable]) {
+                                // COR
+                                if (tmpCOR_Alt > COR) {
+                                    flagCOR_Alt = 0;
+                                }
+                                if (flagCOR_Alt == 1) {
+                                    calcPoint();
+                                    return;
+                                }
+                    
+                                SRPhase2noExt(targetButton, extinctionCue);
+                                srPhase2Session3++;
+                    
+                                onsetVI_Alt = performance.now(); 
+                                Value_Variable++;
+                                FleshlerHoffman(VI_Alt);
+                            }
+                        } else if (flagInitPhase2Session4) {
+                            if (performance.now() - onsetVI_Alt >= rd[Value_Variable]) {
+                                // COR
+                                if (tmpCOR_Alt > COR) {
+                                    flagCOR_Alt = 0;
+                                }
+                                if (flagCOR_Alt == 1) {
+                                    calcPoint();
+                                    return;
+                                }
+                    
+                                SRPhase2targetExt(targetButton, extinctionCue);
+                                srPhase2Session4++;
+                    
+                                onsetVI_Alt = performance.now(); 
+                                Value_Variable++;
+                                FleshlerHoffman(VI_Alt);
+                            }
+                        }
+                        calcPoint();
+                    } else if (tExtFirst == false) {
+                        if (flagInitPhase2Session1) {
+                            if (performance.now() - onsetVI_Alt >= rd[Value_Variable]) {
+                            // Note Phase 2 automatically starts but VI schedule starts only after the first SR upon a single response, after meeting COR 
+                            // COR
+                                if (tmpCOR_Alt > COR) {
+                                    flagCOR_Alt = 0;
+                                }
+                                if (flagCOR_Alt == 1) {
+                                    calcPoint();
+                                    return;
+                                }
+                            
+                                SRPhase2noExt(targetButton, targetCue);
+                                srPhase2Session1++;
+                            
+                                onsetVI_Alt = performance.now();
+                                Value_Variable++;
+                                FleshlerHoffman(VI_Alt);
+                            }
+                        } else if (flagInitPhase2Session2) {
+                            if (performance.now() - onsetVI_Alt >= rd[Value_Variable]) {
+                    
+                                // COR
+                                if (tmpCOR_Alt > COR) {
+                                    flagCOR_Alt = 0;
+                                }
+                                if (flagCOR_Alt == 1) {
+                                    calcPoint();
+                                    return;
+                                }
+                                
+                                SRPhase2targetExt(targetButton, targetCue);
+                                srPhase2Session2++;
+                                
+                                onsetVI_Alt = performance.now(); 
+                                Value_Variable++;
+                                FleshlerHoffman(VI_Alt);
+                            }
+                        } else if (flagInitPhase2Session3) {
+                            if (performance.now() - onsetVI_Alt >= rd[Value_Variable]) {
+                                // COR
+                                if (tmpCOR_Alt > COR) {
+                                    flagCOR_Alt = 0;
+                                }
+                                if (flagCOR_Alt == 1) {
+                                    calcPoint();
+                                    return;
+                                }
+                    
+                                SRPhase2targetExt(targetButton, targetCue);
+                                srPhase2Session3++;
+                    
+                                onsetVI_Alt = performance.now(); 
+                                Value_Variable++;
+                                FleshlerHoffman(VI_Alt);
+                            }
+                        } else if (flagInitPhase2Session4) {
+                            if (performance.now() - onsetVI_Alt >= rd[Value_Variable]) {
+                                // COR
+                                if (tmpCOR_Alt > COR) {
+                                    flagCOR_Alt = 0;
+                                }
+                                if (flagCOR_Alt == 1) {
+                                    calcPoint();
+                                    return;
+                                }
+                    
+                                SRPhase2noExt(targetButton, targetCue);
+                                srPhase2Session4++;
+                    
+                                onsetVI_Alt = performance.now(); 
+                                Value_Variable++;
+                                FleshlerHoffman(VI_Alt);
+                            }
+                        }
+                        calcPoint();
+                    }
+                } else if(flagEndPhase2) {
+
+                }
+            }
+
+            // A variety of responses
+            (function() {
+                btnLeft.addEventListener('mousedown',function() {
+                    btnLeft.style.opacity = 1.0;
+                    btnRight.style.opacity = 0.5;
+                    if (targetButton == 0) {
+                        TargetResp(0); 
+                    } else {
+                        AltResp(0);    
+                    }
+                });
+                
+                btnRight.addEventListener('mousedown',function() {
+                    btnRight.style.opacity = 1.0;
+                    btnLeft.style.opacity = 0.5;
+                    if (targetButton == 0) {
+                        AltResp(1);
+                    } else {
+                        TargetResp(1); 
+                    }
+                });
+                
+                leftWorkplace.addEventListener('mousedown',function() {
+                    EventMarker("03");
+                });
+                
+                rightWorkplace.addEventListener('mousedown',function() {
+                    EventMarker("04");
+                });
+                
+                barPoint.addEventListener('mousedown',function() {
+                    EventMarker("05");
+                });
+                
+                lblBarPoint.addEventListener('mousedown',function() {
+                    EventMarker("06");
+                });
+                
+                $('html').click(function(e) {
+                    if(e.target.tagName == 'HTML') {
+                        EventMarker("07");
+                    }
+                });
+                
+                imgBeach.addEventListener('mousedown',function() {
+                    EventMarker("07");
+                });
+                
+                imgTriangleLeft.addEventListener('mousedown',function() {
+                    EventMarker("08");
+                });
+                
+                imgTriangleRight.addEventListener('mousedown',function() {
+                    EventMarker("09");
+                });
+
+                imgDiamondLeft.addEventListener('mousedown',function() {
+                    EventMarker("10");
+                });
+                
+                imgDiamondRight.addEventListener('mousedown',function() {
+                    EventMarker("11");
+                });
+                
+                lblGainLeft.addEventListener('mousedown',function() {
+                    EventMarker("12");
+                });
+                
+                lblGainRight.addEventListener('mousedown',function() {
+                    EventMarker("13");
+                });
+                
+                btnSaveData.addEventListener('mousedown',function() {
+                    SaveData();
+                });
+            })();
+
+            // Move a button to the left
+            function MoveLeft(btn) {
+                 btn.style.left = (parseInt(btn.style.left, 10) - buttonMotionStep) + "px";
+            }
+            
+            // Move a button to the right
+            function MoveRight(btn) {
+                btn.style.left = (parseInt(btn.style.left, 10) + buttonMotionStep) + "px";
+            }
+
+            // Move a button to the upward
+            function MoveUp(btn) {
+                btn.style.top = (parseInt(btn.style.top, 10) - buttonMotionStep) + "px";
+            }
+            
+            // Move a button to the downward
+            function MoveDown(btn) {
+                btn.style.top = (parseInt(btn.style.top, 10) + buttonMotionStep) + "px";
+            }
+
+            // Determine the next button location
+            function btnmov(btn, minX, maxX, minY, maxY) {
+                var newLoc_X = new Array(2);
+                var newLoc_Y = new Array(2);
+                
+                var blnTop = Boolean(true);
+                var blnBottom = Boolean(true);
+                var blnLeft = Boolean(true);
+                var blnRight = Boolean(true);
+                
+                newLoc_X[0] = parseInt(btn.style.left, 10) - buttonMotionStep;
+                newLoc_X[1] = parseInt(btn.style.left, 10) + buttonMotionStep;
+                newLoc_Y[0] = parseInt(btn.style.top, 10) - buttonMotionStep;
+                newLoc_Y[1] = parseInt(btn.style.top, 10) + buttonMotionStep;
+
+                if (newLoc_X[0] < minX) blnLeft = false;
+                if (newLoc_X[1] > maxX) blnRight = false;
+                if (newLoc_Y[0] < minY) blnTop = false;
+                if (newLoc_Y[1] > maxY) blnBottom = false;
+
+                var dirs = Number(blnLeft) + Number(blnRight) + Number(blnTop) + Number(blnBottom);
+                var rn = 0;
+                
+                // 2 possible directions
+                if (dirs == 2) {
+                    rn = (Math.abs(xorshift()) % 2);
+                    if (blnLeft) {
+                        if (rn == 0) {
+                            MoveLeft(btn);
+                            return;
+                        } else {
+                            if (blnRight) {
+                                MoveRight(btn);
+                                return;
+                            }
+                            if (blnTop) {
+                                MoveUp(btn);
+                                return;
+                            }
+                            if (blnBottom) {
+                                MoveDown(btn);
+                                return;
+                            }
+                        }
+                    }
+                    
+                    if (blnRight) {
+                        if (rn == 0) {
+                            MoveRight(btn);
+                            return;
+                        } else {
+                            if (blnTop) {
+                                MoveUp(btn);
+                                return;
+                            }
+                            if (blnBottom) {
+                                MoveDown(btn);
+                                return;
+                            }
+                        }
+                    }
+                    
+                    if (blnTop) {
+                        if (rn == 0) {
+                            MoveUp(btn);
+                            return;
+                        } else {
+                            MoveDown(btn);
+                            return;
+                        }
+                    }
+                }
+                
+                //  3 possible directions
+                if (dirs == 3) {
+                    rn = (Math.abs(xorshift()) % 3);
+                    if (!blnLeft) {
+                        switch (rn) {
+                            case 0:
+                                MoveRight(btn);
+                                break;
+                            case 1:
+                                MoveUp(btn);
+                                break;
+                            case 2:
+                                MoveDown(btn);
+                                break;
+                        }
+                        return;
+                    }
+                    
+                    if (!blnRight) {
+                        switch (rn) {
+                            case 0:
+                                MoveLeft(btn);
+                                break;
+                            case 1:
+                                MoveUp(btn);
+                                break;
+                            case 2:
+                                MoveDown(btn);
+                                break;
+                        }
+                        return;
+                    }
+                    
+                    if (!blnTop) {
+                        switch (rn) {
+                            case 0:
+                                MoveLeft(btn);
+                                break;
+                            case 1:
+                                MoveRight(btn);
+                                break;
+                            case 2:
+                                MoveDown(btn);
+                                break;
+                        }
+                        return;
+                    }
+                    
+                    if (!blnBottom) {
+                        switch (rn) {
+                            case 0:
+                                MoveLeft(btn);
+                                break;
+                            case 1:
+                                MoveRight(btn);
+                                break;
+                            case 2:
+                                MoveUp(btn);
+                                break;
+                        }
+                        return;
+                    }
+                }
+                
+                // 4 possible directions
+                if (dirs == 4) {
+                    rn = (Math.abs(xorshift()) % 4);
+                    switch (rn) {
+                        case 0:
+                            MoveLeft(btn);
+                            break;
+                        case 1:
+                            MoveRight(btn);
+                            break;
+                        case 2:
+                            MoveUp(btn);
+                            break;
+                        case 3:
+                            MoveDown(btn);
+                            break;
+                    }
+                    return;
+                }
+            }
+
+            // Get real time since session onset
+            function RealTime() {
+                return performance.now() - startTime;
+            }
+
+            // Make objects invisible
+            function removeObjects() {
+                leftPanel.style.display = 'none';
+                rightPanel.style.display = 'none';
+                scoreBoard.style.display = 'none';
+                imgBeach.classList.remove('appear');
+                imgTriangleLeft.style.display = 'none';
+                imgTriangleRight.style.display = 'none';
+                imgDiamondLeft.style.display = 'none';
+                imgDiamondRight.style.display = 'none';
+                lblGainLeft.style.display = 'none';
+                lblGainRight.style.display = 'none';
+            }
+
+            // Generate Fleshler & Hoffman's distribution for VI schedule
+            function FleshlerHoffman(Parameter) {
+                if (Value_Variable == n) {Value_Variable = 0; }
+                if (Value_Variable == 0) {
+                    v = Parameter * 1000;
+                    n = Iterations;
+                    rd.fill(0);
+                    vi.fill(0);
+                    
+                    for (var i = 1; i <= n; i++) {
+                        if (i == n) {
+                            vi[i] = Math.round(v * (1 + Math.log(n)));
+                        } else {
+                            vi[i] = Math.round(v * (1 + (Math.log(n)) + (n - i) * (Math.log(n - i)) - (n - i + 1) * Math.log(n - i + 1)));
+                        }
+                        do {
+                            order = Math.abs(xorshift()) % n;
+                        } while (rd[order] != 0);
+                        
+                        rd[order] = vi[i];
+                    }
+		            for (var a = 0; a <= n; a++) { 
+		                Sumxser = Sumxser + rd[a]; 
+		            }
+		            if (Sumxser != (v * n)) { rd[0] = rd[0] + ((v * n) - Sumxser); }
+		            Sumxser = 0;
+                } 
+            }
+
+            // xorshift random number generator
+            function xorshift() {
+                var t = seed[0] ^ (seed[0] << 11);
+                seed[0] = seed[1]; seed[1] = seed[2]; seed[2] = seed[3];
+                return seed[3] = (seed[3] ^ (seed[3] >>> 19)) ^ (t ^ (t >>> 8)); 
+            }
+            
+            // Set an initial set of seeds for xorshift random number generator, replacing default seeds
+            function init_xorshift(s) {
+            	for (var i = 0; i < 4; ++i) {
+            	    seed[i] = s = 1812433253 * (s ^ (s >> 30)) + i;
+            	}
+            }
+
+            // Timers
+            tickTock.onmessage = function() {
+                if (flagTerminate) {
+                    removeObjects();
+                    window.location.replace(URL_webpage_terminated);
+                } else {
+                    
+                    if (RealTime() > terminatePhase1 && targetRespCount == 0 && altRespCount == 0) {
+                        flagTerminate = 1;
+                    }
+                    
+                    if (!flagEndSession) {
+                        // Button motion
+                        if (performance.now() - intervalOnsetMotion >=  motionInterval) {
+                            intervalOnsetMotion = performance.now();
+                            
+                            btnmov(btnLeft, btnLeftMinX, btnLeftMaxX, btnLeftMinY, btnLeftMaxY)
+                            btnmov(btnRight, btnRightMinX, btnRightMaxX, btnRightMinY, btnRightMaxY)
+                            
+                            var rect = btnLeft.getBoundingClientRect();
+                            imgTriangleLeft.style.left = (rect.left + triangleOffsetX) + "px";
+                            imgTriangleLeft.style.top = (rect.top - triangleOffsetY) + "px";
+                            imgDiamondLeft.style.left = (rect.left + diamondOffsetX) + "px";
+                            imgDiamondLeft.style.top = (rect.top - diamondOffsetY) + "px";
+                            lblGainLeft.style.left = (rect.left + gainOffsetX) + "px";
+                            lblGainLeft.style.top = (rect.top - gainOffsetY) + "px";
+                            
+                            rect = btnRight.getBoundingClientRect();
+                            imgTriangleRight.style.left = (rect.left + triangleOffsetX) + "px";
+                            imgTriangleRight.style.top = (rect.top - triangleOffsetY) + "px";
+                            imgDiamondRight.style.left = (rect.left + diamondOffsetX) + "px";
+                            imgDiamondRight.style.top = (rect.top - diamondOffsetY) + "px";
+                            lblGainRight.style.left = (rect.left + gainOffsetX) + "px";
+                            lblGainRight.style.top = (rect.top - gainOffsetY) + "px";
+                        }
+
+                        if (!flagInitPhase1) {
+                            if (targetButton === 0) {
+                                btnLeft.style.display = 'block';
+                                btnRight.style.display = 'none';
+                            } else {
+                                btnLeft.style.display = 'none';
+                                btnRight.style.display = 'block';
+                            }
+                            if (!flagEndPhase1) {
+                                // Phase 1
+                                console.log("Inside Phase 1 block");
+                                if (performance.now() - intervalOnsetPeriod >=  intervalPeriodLength) {
+                                    intervalOnsetPeriod = performance.now();
+                                     
+                                    arrTargetRespCountPhase1.push(tmpTargetRespCount);
+                                    arrAltRespCountPhase1.push(tmpAltRespCount);
+                                    tmpTargetRespCount = 0;
+                                    tmpAltRespCount = 0;
+                                    
+                                    intervalCountPhase1++;
+
+                                    console.log("intervalCountPhase1: " + intervalCountPhase1);
+                                    console.log("numIntervalsPhase1: " + numIntervalsPhase1);
+
+                                    if (intervalCountPhase1 >= numIntervalsPhase1) {
+                                        console.log("Transitioning from Phase 1 to Phase 2 Session 1");
+                                        flagInitPhase1 = 1;
+                                        flagEndPhase1 = 1;
+                                        flagInitPhase2Session1 = 1;
+                                        EventMarker("30");
+
+                                        startCountdown(2);
+
+                                        console.log("flagInitPhase2Session1: " + flagInitPhase2Session1);
+
+                                        var meanPhase1ResponsePerBin = (arrTargetRespCountPhase1.reduce((a, b) => a + b, 0) + arrAltRespCountPhase1.reduce((a, b) => a + b, 0)) / numIntervalsPhase1;
+                                    }
+                                }
+                            }
+                        } else if (flagInitPhase2Session1) {
+                            if (tExtFirst === true) {
+                                btnRight.style.display = 'block';
+                                btnLeft.style.display = 'block';
+                            } else if (tExtFirst === false && targetButton === 0) {
+                                btnRight.style.display = 'block';
+                                btnLeft.style.display = 'none';
+                            } else if (tExtFirst = false && targetButton === 1) {
+                                btnRight.style.display = 'none';
+                                btnLeft.style.display = 'block';
+                            }
+                            if (!flagEndPhase2Session1) {
+                                // Phase 2 Session 1
+                                if (performance.now() - intervalOnsetPeriod >=  intervalPeriodLength) {
+                                    console.log("performance.now() - intervalOnsetPeriod >=  intervalPeriodLength");
+                                    intervalOnsetPeriod = performance.now();
+                                    
+                                    arrTargetRespCountPhase2Session1.push(tmpTargetRespCount);
+                                    arrAltRespCountPhase2Session1.push(tmpAltRespCount);
+                                    tmpTargetRespCount = 0;
+                                    tmpAltRespCount = 0;
+                                    
+                                    intervalCountPhase2Session1++;
+
+                                    var meanPhase1ResponsePerBin = arrTargetRespCountPhase1.reduce((a, b) => a + b, 0) / numIntervalsPhase1;
+                                    var meanPhase2ResponseSession1 = arrTargetRespCountPhase2Session1.reduce((a, b) => a + b, 0) / intervalCountPhase2Session1;
+                                    
+                                    console.log("intervalCountPhase2Session1:", intervalCountPhase2Session1);
+                                    console.log("minIntervalsPhase2Session1:", minIntervalsPhase2Session1);
+                                    console.log("meanPhase2ResponseSession1:", meanPhase2ResponseSession1);
+                                    console.log("meanPhase1ResponsePerBin:", meanPhase1ResponsePerBin);
+                                    console.log("maxIntervalsPhase2:", maxIntervalsPhase2);
+
+                                    if (intervalCountPhase2Session1 >= minIntervalsPhase2Session1 && (meanPhase2ResponseSession1 < meanPhase1ResponsePerBin || intervalCountPhase2Session1 == maxIntervalsPhase2)) {
+                                        flagEndPhase2Session1 = 1;
+                                        flagInitPhase2Session2 = 1;
+                                        flagInitPhase2Session1 = 0;
+                                        EventMarker("31");
+
+                                        console.log("flagInitPhase2Session2: " + flagInitPhase2Session2);
+                                        console.log("flagEndPhase2Session1: " + flagEndPhase2Session1);
+                                        console.log("flagInitPhase2Session1: " + flagInitPhase2Session1);
+                                        console.log("meanPhase2ResponseSession1: " + meanPhase2ResponseSession1)
+                                        console.log("meanPhase1ResponsePerBin: " + meanPhase1ResponsePerBin)
+
+                                        startCountdown(3);
+                                    }
+                                }
+                            }
+                        } else if (flagInitPhase2Session2) {
+                            if (tExtFirst === true && targetButton === 0) {
+                                btnRight.style.display = 'block';
+                                btnLeft.style.display = 'none';
+                            } else if (tExtFirst === true && targetButton === 1) {
+                                btnRight.style.display = 'none';
+                                btnLeft.style.display = 'block';
+                            } else if (tExtFirst = false) {
+                                btnRight.style.display = 'block';
+                                btnLeft.style.display = 'block';
+                            }
+                            if (!flagEndPhase2Session2) {
+                                //Phase 2 Session 2
+                                if (performance.now() - intervalOnsetPeriod >=  intervalPeriodLength) {
+                                    console.log("performance.now() - intervalOnsetPeriod >=  intervalPeriodLength");
+                                    intervalOnsetPeriod = performance.now();
+                                    
+                                    arrTargetRespCountPhase2Session2.push(tmpTargetRespCount);
+                                    arrAltRespCountPhase2Session2.push(tmpAltRespCount);
+                                    tmpTargetRespCount = 0;
+                                    tmpAltRespCount = 0;
+                                    
+                                    intervalCountPhase2Session2++;
+
+                                    var meanPhase1ResponsePerBin = arrTargetRespCountPhase1.reduce((a, b) => a + b, 0) / numIntervalsPhase1;
+                                    var meanPhase2ResponseSession2 = arrTargetRespCountPhase2Session2.reduce((a, b) => a + b, 0) / intervalCountPhase2Session2;
+
+                                    console.log("intervalCountPhase2Session2:", intervalCountPhase2Session2);
+                                    console.log("minIntervalsPhase2Session2:", minIntervalsPhase2Session2);
+                                    console.log("meanPhase2ResponseSession2:", meanPhase2ResponseSession2);
+                                    console.log("meanPhase1ResponsePerBin:", meanPhase1ResponsePerBin);
+                                    console.log("maxIntervalsPhase2:", maxIntervalsPhase2);
+
+                                    if (intervalCountPhase2Session2 >= minIntervalsPhase2Session2 && (meanPhase2ResponseSession2 < meanPhase1ResponsePerBin || intervalCountPhase2Session2 == maxIntervalsPhase2)) {
+                                        flagEndPhase2Session2 = 1;
+                                        flagInitPhase2Session2 = 0;
+                                        flagInitPhase2Session3 = 1;
+                                        EventMarker("32");
+
+                                        startCountdown(4);
+                                    }
+                                }
+                            }
+                        } else if (flagInitPhase2Session3) {
+                            if (tExtFirst === true) {
+                                btnRight.style.display = 'block';
+                                btnLeft.style.display = 'block';
+                            } else if (tExtFirst === false && targetButton === 0) {
+                                btnRight.style.display = 'block';
+                                btnLeft.style.display = 'none';
+                            } else if (tExtFirst = false && targetButton === 1) {
+                                btnRight.style.display = 'none';
+                                btnLeft.style.display = 'block';
+                            }
+                            if(!flagEndPhase2Session3) {
+                                //Phase 2 Session3
+                                if (performance.now() - intervalOnsetPeriod >=  intervalPeriodLength) {
+                                    intervalOnsetPeriod = performance.now();
+                                    
+                                    arrTargetRespCountPhase2Session3.push(tmpTargetRespCount);
+                                    arrAltRespCountPhase2Session3.push(tmpAltRespCount);
+                                    tmpTargetRespCount = 0;
+                                    tmpAltRespCount = 0;
+                                    
+                                    intervalCountPhase2Session3++;
+
+                                    var meanPhase1ResponsePerBin = arrTargetRespCountPhase1.reduce((a, b) => a + b, 0) / numIntervalsPhase1;
+                                    var meanPhase2ResponseSession3 = arrTargetRespCountPhase2Session3.reduce((a, b) => a + b, 0) / intervalCountPhase2Session3;
+
+                                    console.log("intervalCountPhase2Session3:", intervalCountPhase2Session3);
+                                    console.log("minIntervalsPhase2Session3:", minIntervalsPhase2Session3);
+                                    console.log("meanPhase2ResponseSession3:", meanPhase2ResponseSession3);
+                                    console.log("meanPhase1ResponsePerBin:", meanPhase1ResponsePerBin);
+                                    console.log("maxIntervalsPhase2:", maxIntervalsPhase2);
+
+                                    if (intervalCountPhase2Session3 >= minIntervalsPhase2Session3 && (meanPhase2ResponseSession3 < meanPhase1ResponsePerBin || intervalCountPhase2Session3 == maxIntervalsPhase2)) {
+                                        flagEndPhase2Session3 = 1;
+                                        flagInitPhase2Session3 = 0;
+                                        flagInitPhase2Session4 = 1;
+                                        EventMarker("33");
+
+                                        startCountdown(5);
+                                    }
+                                }
+                            }
+                        } else if (flagInitPhase2Session4) {
+                            if (tExtFirst === true && targetButton === 0) {
+                                btnRight.style.display = 'block';
+                                btnLeft.style.display = 'none';
+                            } else if (tExtFirst === true && targetButton === 1) {
+                                btnRight.style.display = 'none';
+                                btnLeft.style.display = 'block';
+                            } else if (tExtFirst = false) {
+                                btnRight.style.display = 'block';
+                                btnLeft.style.display = 'block';
+                            }
+                            if(!flagEndPhase2Session4) {
+                                //Phase 2 Session 4
+                                if (performance.now() - intervalOnsetPeriod >=  intervalPeriodLength) {
+                                    intervalOnsetPeriod = performance.now();
+                                    
+                                    arrTargetRespCountPhase2Session4.push(tmpTargetRespCount);
+                                    arrAltRespCountPhase2Session4.push(tmpAltRespCount);
+                                    tmpTargetRespCount = 0;
+                                    tmpAltRespCount = 0;
+                                    
+                                    intervalCountPhase2Session4++;
+
+                                    var meanPhase1ResponsePerBin = arrTargetRespCountPhase1.reduce((a, b) => a + b, 0) / numIntervalsPhase1;
+                                    var meanPhase2ResponseSession4 = arrTargetRespCountPhase2Session4.reduce((a, b) => a + b, 0) / intervalCountPhase2Session4;
+
+                                    console.log("intervalCountPhase2Session4:", intervalCountPhase2Session4);
+                                    console.log("minIntervalsPhase2Session4:", minIntervalsPhase2Session4);
+                                    console.log("meanPhase2ResponseSession4:", meanPhase2ResponseSession4);
+                                    console.log("meanPhase1ResponsePerBin:", meanPhase1ResponsePerBin);
+                                    console.log("maxIntervalsPhase2:", maxIntervalsPhase2);
+                                    
+                                    if (intervalCountPhase2Session4 >= minIntervalsPhase2Session4 && (meanPhase2ResponseSession4 < meanPhase1ResponsePerBin || intervalCountPhase2Session4 == maxIntervalsPhase2)) {
+                                        flagEndPhase2Session4 = 1;
+                                        flagInitPhase3Session1 = 1;
+                                        flagInitPhase2Session4 = 0;
+                                        EventMarker("34");
+
+                                        startCountdown(6);
+                                    }
+                                }
+                            }
+                        } else if (flagInitPhase3Session1) {
+                            btnLeft.style.display = 'block';
+                            btnRight.style.display = 'block';
+                            if(!flagEndPhase3Session1) {
+                                //Phase 3 Session1
+                                if (performance.now() - intervalOnsetPeriod >=  intervalPeriodLength) {
+                                    intervalOnsetPeriod = performance.now();
+                                    
+                                    arrTargetRespCountPhase3Session1.push(tmpTargetRespCount);
+                                    arrAltRespCountPhase3Session1.push(tmpAltRespCount);
+                                    tmpTargetRespCount = 0;
+                                    tmpAltRespCount = 0;
+                                    
+                                    intervalCountPhase3Session1++;
+
+                                    console.log("intervalCountPhase3Session1:", intervalCountPhase3Session1);
+                                    console.log("numIntervalsPhase3Session1:", numIntervalsPhase3Session1);
+
+                                    if (intervalCountPhase3Session1 >= numIntervalsPhase3Session1) {
+                                        flagEndPhase3Session1 = 1;
+                                        flagInitPhase3Session1 = 0;
+                                        flagInitPhase3Session2 = 1;
+                                        EventMarker("35");
+
+                                        startCountdown(7);
+                                    }
+                                }
+                            }
+                        } else if (flagInitPhase3Session2) {
+                            if(!flagEndPhase3Session2) {
+                                //Phase 3 Session 2
+                                if (performance.now() - intervalOnsetPeriod >=  intervalPeriodLength) {
+                                    intervalOnsetPeriod = performance.now();
+                                    
+                                    arrTargetRespCountPhase3Session2.push(tmpTargetRespCount);
+                                    arrAltRespCountPhase3Session2.push(tmpAltRespCount);
+                                    tmpTargetRespCount = 0;
+                                    tmpAltRespCount = 0;
+                                    
+                                    intervalCountPhase3Session2++;
+
+                                    console.log("intervalCountPhase3Session2:", intervalCountPhase3Session2);
+                                    console.log("numIntervalsPhase3Session2:", numIntervalsPhase3Session2);
+
+                                    if (intervalCountPhase3Session2 >= numIntervalsPhase3Session2) {
+                                        flagEndPhase3Session2 = 1;
+                                        flagInitPhase3Session2 = 0;
+                                        flagInitPhase3Session3 = 1;
+                                        EventMarker("36");
+
+                                        startCountdown(8);
+                                    }
+                                }  
+                            }
+                        } else if (flagInitPhase3Session3) {
+                            if (!flagEndSession) {
+                                //Phase 3 Session 3
+                                if (performance.now() - intervalOnsetPeriod >=  intervalPeriodLength) {
+                                    intervalOnsetPeriod = performance.now();
+                                    
+                                    arrTargetRespCountPhase3Session3.push(tmpTargetRespCount);
+                                    arrAltRespCountPhase3Session3.push(tmpAltRespCount);
+                                    tmpTargetRespCount = 0;
+                                    tmpAltRespCount = 0;
+                                    
+                                    intervalCountPhase3Session3++;
+
+                                    console.log("intervalCountPhase3Session3:", intervalCountPhase3Session3);
+                                    console.log("numIntervalsPhase3Session3:", numIntervalsPhase3Session3);
+
+                                    if (intervalCountPhase3Session3 >= numIntervalsPhase3Session3) {
+                                        EventMarker("99");
+                                        removeObjects();
+                                        btnSaveData.style.display = 'block';
+                                        lblMessage.style.display = 'block';
+                                        lblMessage.innerHTML = 'You completed the game portion of this HIT. Please press PROCEED.';
+                                        
+                                        dtE = new Date();
+                                        dtEnd.push(dtE.getFullYear());
+                                        dtEnd.push(dtE.getMonth() + 1);
+                                        dtEnd.push(dtE.getDate());
+                                        dtEnd.push(dtE.getHours());
+                                        dtEnd.push(dtE.getMinutes());
+                                        dtEnd.push(dtE.getSeconds());
+                                        
+                                        code = Math.abs(xorshift());
+                                        flagEndSession = 1;
+                                    }
+                                }
+                            }
+                        }
+                            
+                    } else {
+                        if (flagSaveButtonClick) {
+                            if (!flagDuringSave) {
+                                lblMessage.innerHTML = 'Please click the button again';
+                                btnSaveData.style.display = 'block';
+                                flagSaveButtonClick = 0;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Entry point of the program
+            function main() {
+                // Prevent workers from returning to this page after making unauthorized behavior
+                var flagBackpage1 = localStorage.getItem("flagBackpage1");
+                if (flagBackpage1 == null) {
+                    flagBackpage1 = 1;
+                    localStorage.setItem("flagBackpage1", flagBackpage1);
+                } else {
+                    //window.location.replace(URL_webpage_backpage);
+                }
+                
+                init_xorshift(performance.now()*1000);
+                
+                // Retrieve ID and GROUP from the previous instruction page
+                // If missing, set values to these variables and save them on a web browser
+                var id = sessionStorage.getItem("ID");
+                var group = sessionStorage.getItem("GROUP");
+                if (id == null) {
+                    ID = -1;
+                    GROUP = (Math.abs(xorshift()) % 16) + 1;
+                    sessionStorage.setItem("ID", ID);
+                    sessionStorage.setItem("GROUP", GROUP);
+                } else {
+                    ID = Number(id);
+                    GROUP = Number(group);
+                }
+                //console.log("ID:" + ID); console.log("Group: " + GROUP);
+
+                switch (GROUP) {
+                    case 1: 
+                        targetButton = 0;
+                        btnLeft.innerHTML = URL_image_circle;
+                        btnRight.innerHTML = URL_image_square;
+                        targetCue = 0;
+                        tExtFirst = true;
+                        break;
+                    case 2: 
+                        targetButton = 0;
+                        btnLeft.innerHTML = URL_image_circle;
+                        btnRight.innerHTML = URL_image_square;
+                        targetCue = 0;
+                        tExtFirst = false;
+                        break;
+                    case 3: 
+                        targetButton = 0;
+                        btnLeft.innerHTML = URL_image_circle;
+                        btnRight.innerHTML = URL_image_square;
+                        targetCue = 1;
+                        tExtFirst = true;
+                        break;
+                    case 4: 
+                        targetButton = 0;
+                        btnLeft.innerHTML = URL_image_circle;
+                        btnRight.innerHTML = URL_image_square;
+                        targetCue = 1;
+                        tExtFirst = false;
+                        break;
+                    case 5:
+                        targetButton = 1;
+                        btnRight.innerHTML = URL_image_circle;
+                        btnLeft.innerHTML = URL_image_square;
+                        targetCue = 0;
+                        tExtFirst = true;
+                        break;
+                    case 6:
+                        targetButton = 1;
+                        btnRight.innerHTML = URL_image_circle;
+                        btnLeft.innerHTML = URL_image_square;
+                        targetCue = 0;
+                        tExtFirst = false;
+                        break;
+                    case 7:
+                        targetButton = 1;
+                        btnRight.innerHTML = URL_image_circle;
+                        btnLeft.innerHTML = URL_image_square;
+                        targetCue = 1;
+                        tExtFirst = true;
+                        break;
+                    case 8: 
+                        targetButton = 1;
+                        btnRight.innerHTML = URL_image_circle;
+                        btnLeft.innerHTML = URL_image_square;
+                        targetCue = 1;
+                        tExtFirst = false;
+                        break;
+                    case 9: 
+                        targetButton = 0;
+                        btnLeft.innerHTML = URL_image_square;
+                        btnRight.innerHTML = URL_image_circle;
+                        targetCue = 0;
+                        tExtFirst = true;
+                        break;
+                    case 10:
+                        targetButton = 0;
+                        btnLeft.innerHTML = URL_image_square;
+                        btnRight.innerHTML = URL_image_circle;
+                        targetCue = 0;
+                        tExtFirst = false;
+                        break;
+                    case 11:
+                        targetButton = 0;
+                        btnLeft.innerHTML = URL_image_circle;
+                        btnRight.innerHTML = URL_image_square;
+                        targetCue = 1;
+                        tExtFirst = true;
+                        break;
+                    case 12: 
+                        targetButton = 0;
+                        btnLeft.innerHTML = URL_image_square;
+                        btnRight.innerHTML = URL_image_circle;
+                        targetCue = 1;
+                        tExtFirst = false;
+                        break;
+                    case 13: 
+                        targetButton = 1;
+                        btnRight.innerHTML = URL_image_square;
+                        btnLeft.innerHTML = URL_image_circle;
+                        targetCue = 0;
+                        tExtFirst = true;
+                        break;
+                    case 14:
+                        targetButton = 1;
+                        btnRight.innerHTML = URL_image_square;
+                        btnLeft.innerHTML = URL_image_circle;
+                        targetCue = 0;
+                        tExtFirst = false;
+                        break;
+                    case 15:
+                        targetButton = 1;
+                        btnRight.innerHTML = URL_image_square;
+                        btnLeft.innerHTML = URL_image_circle
+                        targetCue = 1;
+                        tExtFirst = true;
+                        break;
+                    case 16: 
+                        targetButton = 1;
+                        btnRight.innerHTML = URL_image_square;
+                        btnLeft.innerHTML = URL_image_circle;
+                        targetCue = 1;
+                        tExtFirst = false;
+                        break;
+                }
+
+                // Set initial points
+                totalGain = initPoint;
+
+                // Configure objects displayed on a monitor
+                document.body.style.minWidth = Width + "px";
+                document.body.style.minHeight = Height + "px";
+                
+                lblMessage.style.display = "none";
+                btnSaveData.style.display = "none";
+                
+                var rectLeftWorkplace = leftWorkplace.getBoundingClientRect();
+                leftPanel.style.left = (Width - rectLeftWorkplace.width)/ 2 - offsetMidline +"px";
+                leftPanel.style.top = (Height - rectLeftWorkplace.height)/ 2 + "px";
+                
+                var rectRightWorkplace = rightWorkplace.getBoundingClientRect();
+                rightPanel.style.left = (Width - rectRightWorkplace.width)/ 2 + offsetMidline + "px";
+                rightPanel.style.top = (Height - rectRightWorkplace.height)/ 2 + "px";
+                
+                var rectBtnLeft = btnLeft.getBoundingClientRect();
+                btnLeft.style.left =  rectLeftWorkplace.left + (rectLeftWorkplace.width - rectBtnLeft.width) / 2 + "px";
+                btnLeft.style.top = rectLeftWorkplace.top + (rectLeftWorkplace.height - rectBtnLeft.height) / 2 + "px";
+                
+                var rectBtnRight = btnRight.getBoundingClientRect();
+                btnRight.style.left = rectRightWorkplace.left + (rectRightWorkplace.width - rectBtnRight.width) / 2 + "px";
+                btnRight.style.top = rectRightWorkplace.top + (rectRightWorkplace.height - rectBtnRight.height) / 2 + "px";
+            
+                btnLeftMinX =  parseInt(btnLeft.style.left, 10) - adj;
+                btnLeftMaxX = parseInt(btnLeft.style.left, 10) + adj;
+                btnLeftMinY = parseInt(btnLeft.style.top, 10) - adj;
+                btnLeftMaxY = parseInt(btnLeft.style.top, 10) + adj;
+                btnRightMinX = parseInt(btnRight.style.left, 10) - adj;
+                btnRightMaxX = parseInt(btnRight.style.left, 10) + adj;
+                btnRightMinY = parseInt(btnRight.style.top, 10) - adj;
+                btnRightMaxY = parseInt(btnRight.style.top, 10) + adj;
+
+                var rect = btnLeft.getBoundingClientRect();
+                imgTriangleLeft.style.left = "0px";
+                imgTriangleLeft.style.top = "0px";
+                imgTriangleRight.style.left = "0px";
+                imgTriangleRight.style.top = "0px";
+                imgDiamondLeft.style.left = "0px";
+                imgDiamondLeft.style.top = "0px";
+                imgDiamondRight.style.left = "0px";
+                imgDiamondRight.style.top = "0px";
+                
+                lblGainLeft.style.left = "0px";
+                lblGainLeft.style.top = "0px";
+                lblGainLeft.style.color = "#00ff00"; // Green
+                lblGainRight.style.left = "0px";
+                lblGainRight.style.top = "0px";
+                lblGainRight.style.color = "#00ff00"; 
+                
+                var rectPanel = leftPanel.getBoundingClientRect();
+                bottomPanel = rectPanel.top + rectLeftWorkplace.height;
+                
+                var rectBarPoint = barPoint.getBoundingClientRect();
+                barPoint.style.height = totalGain * 10000 / pixelRatio + "px";
+                barPoint.style.left = (Width - rectBarPoint.width) / 2 + "px";
+                barPoint.style.top = bottomPanel - totalGain / pixelRatio + "px";
+                
+                lblBarPoint.style.left = (Width - rectBarPoint.width) / 2 + "px";
+                lblBarPoint.style.top = bottomPanel + "px";
+                lblBarPoint.innerHTML = "US$" + (totalGain * dollarPerPoint).toFixed(2);  
+
+                var rectLblBarPoint = lblBarPoint.getBoundingClientRect();
+
+                rectBarPoint = barPoint.getBoundingClientRect();  
+                
+                leftWorkplace.style.zIndex = 0;
+                rightWorkplace.style.zIndex = 1;
+                btnLeft.style.zIndex = 2;
+                btnRight.style.zIndex = 3;
+                
+                // Display a background image
+                imgBeach.classList.add('appear');
+                
+                // Save date & time for session onset
+                dtSt = new Date();
+                dtStart.push(dtSt.getFullYear());
+                dtStart.push(dtSt.getMonth() + 1);
+                dtStart.push(dtSt.getDate());
+                dtStart.push(dtSt.getHours());
+                dtStart.push(dtSt.getMinutes());
+                dtStart.push(dtSt.getSeconds());
+
+                // Initialize VI for target response
+                FleshlerHoffman(VI_Target);
+
+                // Initialize VI for alternative response
+                FleshlerHoffman(VI_Alt);
+                
+                // Prep for timers
+                startTime = performance.now();
+                intervalOnsetMotion = performance.now();
+
+                // Start timer
+                tickTock.postMessage("start");
+            }
+            main(); 
+            
+        </script>
+       
+    </body>
+</html>
